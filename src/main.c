@@ -1,6 +1,6 @@
 #include <stddef.h>
 #include <stdio.h>
-#include "include/z-libs/zstr.h"
+#include "../include/z-libs/zstr.h"
 
 zstr get_input() {
 	char buf[1024];
