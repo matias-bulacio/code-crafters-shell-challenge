@@ -413,7 +413,7 @@ static inline zstr zstr_from_len(const char *ptr, size_t len)
 // Creates a zstr from a standard C-string.
 static inline zstr zstr_from(const char *cstr)
 {
-    return zstr_from_len(cstr, strlen(cstr));
+    return zstr_from_len(cstr, strlen(cstr) + 1);
 }
 
 // Macro for compile-time string literals (avoids runtime strlen).
