@@ -53,3 +53,9 @@ dkms.conf
 
 build
 vcpkg_installed
+
+meson.build
+build.d
+.clang*
+.cache/
+compile_commands.json
