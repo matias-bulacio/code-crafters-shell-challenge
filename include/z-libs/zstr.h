@@ -310,7 +310,8 @@ static inline void zstr_clear(zstr *s)
 // Handles the transition from SSO (Stack) to Long (Heap).
 static inline int zstr_reserve(zstr *s, size_t new_cap)
 {
-    if (new_cap <= ZSTR_SSO_CAP) return Z_OK;
+	// new_cap + 1 to include null terminator
+    if (new_cap + 1 <= ZSTR_SSO_CAP) return Z_OK;
     if (s->is_long && new_cap <= s->l.cap) return Z_OK;
 
     char *new_ptr;
@@ -413,7 +414,7 @@ static inline zstr zstr_from_len(const char *ptr, size_t len)
 // Creates a zstr from a standard C-string.
 static inline zstr zstr_from(const char *cstr)
 {
-    return zstr_from_len(cstr, strlen(cstr) + 1);
+    return zstr_from_len(cstr, strlen(cstr));
 }
 
 // Macro for compile-time string literals (avoids runtime strlen).

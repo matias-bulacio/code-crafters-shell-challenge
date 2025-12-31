@@ -16,9 +16,11 @@
 zstr get_input() {
     char buf[1024];
     fgets(buf, 1024, stdin);
+	DLN("%lu", strlen(buf));
 
 	REACHED("About to allocate!");
     zstr s = zstr_from(buf);
+	REACHED("Allocated!");
     zstr_trim(&s);
     return s;
 }
@@ -51,6 +53,7 @@ void repl() {
     printf("$ ");
     zstr cmd = get_input();
     run(zstr_as_view(&cmd));
+	zstr_free(&cmd);
 }
 
 int main(int argc, char *argv[]) {
