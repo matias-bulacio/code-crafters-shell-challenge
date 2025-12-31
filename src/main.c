@@ -36,7 +36,6 @@ void not_found(zstr_view cmd) {
     }
     zstr_view name = cmd;
     name.len = first_space;
-	printf("%d", (int)name.len);
     fprintf(stdout, "%.*s: command not found\n", (int)name.len, name.data);
 }
 
