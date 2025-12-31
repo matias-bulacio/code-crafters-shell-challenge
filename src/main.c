@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 zstr get_input() {
     char buf[1024];
@@ -25,10 +26,19 @@ void not_found(zstr_view cmd) {
     fprintf(stdout, "%.*s: command not found\n", (int)name.len, name.data);
 }
 
+int run(zstr_view cmd) {
+	if(zstr_view_eq(cmd, "exit")) {
+		exit(EXIT_SUCCESS);
+	}
+	
+	not_found(cmd);
+	return 1;
+}
+
 void repl() {
     printf("$ ");
     zstr cmd = get_input();
-    not_found(zstr_as_view(&cmd));
+    run(zstr_as_view(&cmd));
 }
 
 int main(int argc, char *argv[]) {
