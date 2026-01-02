@@ -1,4 +1,8 @@
 #include "../include/z-libs/zstr.h"
+#include "../include/z-libs/zstr.h"
+#include "../include/builtin-map.h"
+#include "../include/z-libs/zvec-registered.h"
+#include "../include/args_func.h"
 #include <ctype.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -38,44 +42,27 @@ void not_found(zstr_view cmd) {
     fprintf(stdout, "%.*s: command not found\n", (int)name.len, name.data);
 }
 
-int run(zstr_view cmd) {
-    if (zstr_view_eq(cmd, "exit")) {
-        exit(EXIT_SUCCESS);
-    }
-    if (zstr_view_starts_with(cmd, "echo")) {
-
-        zstr_split_iter it = zstr_split_init(cmd, " ");
-        zstr_view arg;
-        size_t argc = 0;
-        zstr out = zstr_init();
-        while (argc++, zstr_split_next(&it, &arg)) {
-            if (argc == 1)
-                continue;
-            if (arg.len == 0)
-                continue;
-            if (argc == 2) {
-                zstr_fmt(&out, "%.*s", (int)arg.len, arg.data);
-            } else {
-                zstr_fmt(&out, " %.*s", (int)arg.len, arg.data);
-            }
-        }
-        printf(ZSTR_FMT "\n", ZSTR_ARG(out));
-        zstr_free(&out);
-        return 0;
-    }
-    REACHED("Will call not found");
-    not_found(cmd);
-    return 1;
+int run(zvec_ShArgs args) {
+	zstr_view name = *zvec_at(&args, 0);
+	sh_builtin *bi = zmap_get(&builtin_map, name);
+	if(bi == NULL) {
+		REACHED("Not found!");
+		not_found(name);
+		return 1;
+	}
+	return (*bi)(args);
 }
 
 void repl() {
     printf("$ ");
     zstr cmd = get_input();
-    run(zstr_as_view(&cmd));
+	zvec_ShArgs args = parse_into_args(zstr_as_view(&cmd));
+    run(args);
     zstr_free(&cmd);
 }
 
 int main(int argc, char *argv[]) {
+	builtin_map_init();
     // Flush after every printf
     setbuf(stdout, NULL);
 
