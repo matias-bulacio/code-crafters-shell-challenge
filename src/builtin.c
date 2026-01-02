@@ -28,7 +28,7 @@ void builtin_map_init() {
 }
 
 int type_cmd(zvec_ShArgs v) {
-	zstr_view name = *zvec_at(&v, 0);
+	zstr_view name = *zvec_at(&v, 1);
 	sh_builtin *k = zmap_get(&builtin_map, name);
 	if(k == NULL) {
 		printf("%.*s: not found\n", (int)name.len, name.data);
