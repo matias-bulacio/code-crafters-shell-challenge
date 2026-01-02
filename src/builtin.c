@@ -1,8 +1,8 @@
 #include "../include/builtin.h"
 #include "../include/builtin-map.h"
 #include "../include/z-libs/zstr.h"
-#include "include/z-libs/zmaps-registered.h"
-#include "include/z-libs/zvec-registered.h"
+#include "../include/z-libs/zmaps-registered.h"
+#include "../include/z-libs/zvec-registered.h"
 #include <stdio.h>
 #include <stdlib.h>
 zmap_ShBuiltinMap builtin_map;
