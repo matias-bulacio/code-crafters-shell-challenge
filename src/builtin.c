@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <unistd.h>
 zmap_ShBuiltinMap builtin_map;
 int cmp_zstr(zstr_view a, zstr_view b) {
     if (zstr_view_eq_view(a, b) == true)
@@ -74,4 +75,18 @@ int echo_cmd(zvec_ShArgs v, char **env) {
     }
     printf("\n");
     return 0;
+}
+
+int pwd_cmd(zvec_ShArgs, char**) {
+	size_t cap = 1024;
+	char *pwd_c = malloc(cap);
+	if(pwd_c == NULL) return 1;
+	while(getcwd(pwd_c, cap) == NULL) { // FAILED
+		cap *= 1.5;
+		pwd_c = realloc(pwd_c, cap);
+		if(pwd_c == NULL) return 1;
+	}
+	printf("%s\n", pwd_c);
+	free(pwd_c);
+	return 0;
 }
