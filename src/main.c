@@ -3,7 +3,7 @@
 #include "../include/macros.h"
 #include "../include/z-libs/zstr.h"
 #include "../include/z-libs/zvec-registered.h"
-#include "include/sh_exec.h"
+#include "../include/sh_exec.h"
 #include <stddef.h>
 #include <stdio.h>
 
