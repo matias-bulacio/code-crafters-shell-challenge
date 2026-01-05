@@ -4,7 +4,7 @@
 #include "../include/z-libs/zmaps-registered.h"
 #include "../include/z-libs/zstr.h"
 #include "../include/z-libs/zvec-registered.h"
-#include "include/sh_exec.h"
+#include "../include/sh_exec.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
