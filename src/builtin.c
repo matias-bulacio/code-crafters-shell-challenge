@@ -4,6 +4,7 @@
 #include "../include/z-libs/zmaps-registered.h"
 #include "../include/z-libs/zstr.h"
 #include "../include/z-libs/zvec-registered.h"
+#include "include/sh_exec.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -27,9 +28,9 @@ void builtin_map_init() {
 
 int type_cmd(zvec_ShArgs v, char **env) {
     zstr_view name = *zvec_at(&v, 1);
-    sh_builtin *k = zmap_get(&builtin_map, name);
 
     // Is it a builtin?
+    sh_builtin *k = zmap_get(&builtin_map, name);
     if (k != NULL) {
         printf("%.*s is a shell builtin\n", (int)name.len, name.data);
         return 0;
@@ -46,38 +47,12 @@ int type_cmd(zvec_ShArgs v, char **env) {
         } else {
 			REACHED("PATH is empty");
 		}
-        zstr_split_iter it = zstr_split_init(zstr_as_view(&path), ":");
-        zstr_view path_dir;
-
-        while (zstr_split_next(&it, &path_dir)) {
-            zstr_autofree s = zstr_from_view(path_dir);
-
-            if (zstr_ends_with(&s, "/"))
-                zstr_pop_char(&s);
-			DLN(ZSTR_FMT, ZSTR_ARG(s));
-
-            zstr_fmt(&s, "/%.*s", (int)name.len,
-                     name.data); // Path is now ready and stored in s
-
-			DLN(ZSTR_FMT, ZSTR_ARG(s));
-
-            struct stat stat_data;
-            int stat_res = stat(zstr_cstr(&s), &stat_data);
-            if (stat_res != 0) {
-				REACHED("Not found here!");
-                continue;
-            }
-
-			if (0 != (stat_data.st_mode & S_IXUSR)) { // Has execute permisions
-				REACHED("Has permisions!");
-				printf("%.*s is "ZSTR_FMT"\n", (int)name.len, name.data, ZSTR_ARG(s));
-				return 0;
-			}
-
-			REACHED("No permitions");
-
-			continue;
-        }
+		zstr exec_path = find_exec(name, zstr_view_from(pathenv));
+		if (zstr_len(&exec_path) != 0) { // FOUND
+			printf("%.*s is "ZSTR_FMT"\n", (int)name.len, name.data, ZSTR_ARG(exec_path));
+			return 0;;
+		}
+		zstr_free(&exec_path);
     }
 
     printf("%.*s: not found\n", (int)name.len, name.data);
