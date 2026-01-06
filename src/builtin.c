@@ -5,6 +5,7 @@
 #include "../include/z-libs/zmaps-registered.h"
 #include "../include/z-libs/zstr.h"
 #include "../include/z-libs/zvec-registered.h"
+#include "include/sh_env.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -97,16 +98,31 @@ int pwd_cmd(zvec_ShArgs, char **) {
 }
 
 int cd_cmd(zvec_ShArgs args, char **) {
-    zstr_view dir;
-    if (args.length >= 1)
-        dir = args.data[1];
+    zstr_view dir_v;
+    if (args.length > 1)
+        dir_v = args.data[1];
     else
-        dir = ZSV("/");
+        dir_v = ZSV("~");
 
-    zstr_autofree dir_zstr = zstr_from_view(dir);
-    if (0 != chdir(zstr_cstr(&dir_zstr))) {
-		printf("cd: %.*s: No such file or directory\n", (int)dir.len, dir.data);
-		return 1;
+    zstr_autofree dir_zstr = zstr_from_view(dir_v);
+    if (zstr_view_starts_with(dir_v, "~")) {
+        bool slash_after_tilde = dir_v.len != 1 && dir_v.data[1] == '/';
+
+        if (dir_v.len != 1 && !slash_after_tilde)
+            goto not_HOME_prefix;
+
+        zstr_autofree home = zgetenv_v(ZSV("HOME"));
+        zstr_clear(&dir_zstr);
+
+        zstr_view rest = zstr_sub(dir_v, 1, dir_v.len - 1);
+
+        zstr_fmt(&dir_zstr, ZSTR_FMT "%.*s", ZSTR_ARG(home), (int)rest.len, rest.data);
     }
-	return 0;
+not_HOME_prefix:
+    if (0 != chdir(zstr_cstr(&dir_zstr))) {
+        printf("cd: %.*s: No such file or directory\n", (int)dir_v.len,
+               dir_v.data);
+        return 1;
+    }
+    return 0;
 }
