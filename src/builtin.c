@@ -5,8 +5,7 @@
 #include "../include/z-libs/zmaps-registered.h"
 #include "../include/z-libs/zstr.h"
 #include "../include/z-libs/zvec-registered.h"
-#include "include/sh_env.h"
-#include <errno.h>
+#include "../include/sh_env.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -116,7 +115,8 @@ int cd_cmd(zvec_ShArgs args, char **) {
 
         zstr_view rest = zstr_sub(dir_v, 1, dir_v.len - 1);
 
-        zstr_fmt(&dir_zstr, ZSTR_FMT "%.*s", ZSTR_ARG(home), (int)rest.len, rest.data);
+        zstr_fmt(&dir_zstr, ZSTR_FMT "%.*s", ZSTR_ARG(home), (int)rest.len,
+                 rest.data);
     }
 not_HOME_prefix:
     if (0 != chdir(zstr_cstr(&dir_zstr))) {

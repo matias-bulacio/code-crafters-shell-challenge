@@ -1,5 +1,4 @@
 #include "../include/sh_env.h"
-#include "../include/macros.h"
 
 zstr zgetenv_s(zstr *s) {
     zstr var = zstr_init();
