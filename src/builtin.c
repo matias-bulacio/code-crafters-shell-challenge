@@ -1,10 +1,11 @@
 #include "../include/builtin.h"
 #include "../include/builtin-map.h"
 #include "../include/macros.h"
+#include "../include/sh_exec.h"
 #include "../include/z-libs/zmaps-registered.h"
 #include "../include/z-libs/zstr.h"
 #include "../include/z-libs/zvec-registered.h"
-#include "../include/sh_exec.h"
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -37,23 +38,25 @@ int type_cmd(zvec_ShArgs v, char **env) {
         return 0;
     }
 
-	REACHED("Inside type");
+    REACHED("Inside type");
     // Is it an executable file?
     scope {
         zstr_autofree path = zstr_init();
         char *pathenv = getenv("PATH");
         if (pathenv != NULL) {
-			DLN("PATH=%s", pathenv);
+            DLN("PATH=%s", pathenv);
             zstr_fmt(&path, "%s", pathenv);
         } else {
-			REACHED("PATH is empty");
-		}
-		zstr exec_path = find_exec(name, zstr_view_from(pathenv));
-		if (zstr_len(&exec_path) != 0) { // FOUND
-			printf("%.*s is "ZSTR_FMT"\n", (int)name.len, name.data, ZSTR_ARG(exec_path));
-			return 0;;
-		}
-		zstr_free(&exec_path);
+            REACHED("PATH is empty");
+        }
+        zstr exec_path = find_exec(name, zstr_view_from(pathenv));
+        if (zstr_len(&exec_path) != 0) { // FOUND
+            printf("%.*s is " ZSTR_FMT "\n", (int)name.len, name.data,
+                   ZSTR_ARG(exec_path));
+            return 0;
+            ;
+        }
+        zstr_free(&exec_path);
     }
 
     printf("%.*s: not found\n", (int)name.len, name.data);
@@ -77,16 +80,33 @@ int echo_cmd(zvec_ShArgs v, char **env) {
     return 0;
 }
 
-int pwd_cmd(zvec_ShArgs, char**) {
-	size_t cap = 1024;
-	char *pwd_c = malloc(cap);
-	if(pwd_c == NULL) return 1;
-	while(getcwd(pwd_c, cap) == NULL) { // FAILED
-		cap *= 1.5;
-		pwd_c = realloc(pwd_c, cap);
-		if(pwd_c == NULL) return 1;
-	}
-	printf("%s\n", pwd_c);
-	free(pwd_c);
+int pwd_cmd(zvec_ShArgs, char **) {
+    size_t cap = 1024;
+    char *pwd_c = malloc(cap);
+    if (pwd_c == NULL)
+        return 1;
+    while (getcwd(pwd_c, cap) == NULL) { // FAILED
+        cap *= 1.5;
+        pwd_c = realloc(pwd_c, cap);
+        if (pwd_c == NULL)
+            return 1;
+    }
+    printf("%s\n", pwd_c);
+    free(pwd_c);
+    return 0;
+}
+
+int cd_cmd(zvec_ShArgs args, char **) {
+    zstr_view dir;
+    if (args.length >= 1)
+        dir = args.data[1];
+    else
+        dir = ZSV("/");
+
+    zstr_autofree dir_zstr = zstr_from_view(dir);
+    if (0 != chdir(zstr_cstr(&dir_zstr))) {
+		printf("cd: %.*s: No such file or directory\n", (int)dir.len, dir.data);
+		return 1;
+    }
 	return 0;
 }

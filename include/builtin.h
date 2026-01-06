@@ -10,7 +10,8 @@ typedef int (*sh_builtin)(zvec_ShArgs, char **env);
     X(echo)                                                                    \
     X(exit)                                                                    \
     X(type)                                                                    \
-    X(pwd)
+    X(pwd)                                                                     \
+    X(cd)
 
 #define predeclare(f) int f##_cmd(zvec_ShArgs cmd, char **env);
 BUILTIN_LIST(predeclare)
