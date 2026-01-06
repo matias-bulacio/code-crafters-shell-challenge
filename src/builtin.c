@@ -2,10 +2,10 @@
 #include "../include/builtin-map.h"
 #include "../include/macros.h"
 #include "../include/sh_exec.h"
+#include "../include/sh_path.h"
 #include "../include/z-libs/zmaps-registered.h"
 #include "../include/z-libs/zstr.h"
 #include "../include/z-libs/zvec-registered.h"
-#include "../include/sh_env.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -100,25 +100,11 @@ int cd_cmd(zvec_ShArgs args, char **) {
     zstr_view dir_v;
     if (args.length > 1)
         dir_v = args.data[1];
-    else
+    else {
         dir_v = ZSV("~");
-
-    zstr_autofree dir_zstr = zstr_from_view(dir_v);
-    if (zstr_view_starts_with(dir_v, "~")) {
-        bool slash_after_tilde = dir_v.len != 1 && dir_v.data[1] == '/';
-
-        if (dir_v.len != 1 && !slash_after_tilde)
-            goto not_HOME_prefix;
-
-        zstr_autofree home = zgetenv_v(ZSV("HOME"));
-        zstr_clear(&dir_zstr);
-
-        zstr_view rest = zstr_sub(dir_v, 1, dir_v.len - 1);
-
-        zstr_fmt(&dir_zstr, ZSTR_FMT "%.*s", ZSTR_ARG(home), (int)rest.len,
-                 rest.data);
     }
-not_HOME_prefix:
+
+    zstr_autofree dir_zstr = sh_resolve_path(dir_v);
     if (0 != chdir(zstr_cstr(&dir_zstr))) {
         printf("cd: %.*s: No such file or directory\n", (int)dir_v.len,
                dir_v.data);
