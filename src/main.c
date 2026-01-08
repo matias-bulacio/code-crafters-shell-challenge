@@ -42,7 +42,7 @@ int run(zvec_ShArgs args, char **env) {
 void repl(char **env) {
     printf("$ ");
     zstr cmd = get_input();
-    zvec_ShArgs args = parse_into_args(zstr_as_view(&cmd));
+    zvec_ShArgs args = parse_into_args(cmd);
     run(args, env);
 
 	REACHED("Start to free!");

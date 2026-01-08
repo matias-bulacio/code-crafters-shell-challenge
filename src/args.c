@@ -1,4 +1,5 @@
 #include "../include/args_type.h"
+#include "../include/macros.h"
 #include "../include/z-libs/zvec-registered.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -7,29 +8,26 @@
 
 // This function allocates a bunch of zstr stored in the returned vector.
 // Remember to free them!
-zvec_ShArgs parse_into_args(zstr_view cmd) {
+zvec_ShArgs parse_into_args(const zstr cmd) {
     zvec_ShArgs ret = zvec_init(ShArgs);
 
-    { // For some reason, zstr_is_valid_utf8 takes in a zstr, so we need to
-      // allocate it and deallocate it.
-        zstr z = zstr_from_view(cmd);
-        if (!zstr_is_valid_utf8(&z))
-            return ret;
-        zstr_free(&z);
-    }
+    if (!zstr_is_valid_utf8(&cmd))
+        return ret;
 
-    const char *runes = cmd.data;
+    const char *runes = zstr_cstr(&cmd);
 
-#define PUSH_AND_CLEAR_ARG(zv, zs)                                             \
+#define PUSH_AND_RESET_ARG(zv, zs)                                             \
     do {                                                                       \
         zvec_push(&(zv), zs);                                                  \
-        zstr_clear(&(zs));                                                     \
+        DLN(ZSTR_FMT, ZSTR_ARG(zs));                                           \
+        (zs) = zstr_init();                                                    \
     } while (0)
 
     wint_t r;
     wchar_t quote = 0;
     zstr arg = zstr_init();
     while (r = zstr_next_rune(&runes), r != 0 && r != WEOF) {
+        DLN("%lc", r);
         if (quote != 0) {
             if (r != quote) {
                 zstr_fmt(&arg, "%lc", r);
@@ -46,19 +44,19 @@ zvec_ShArgs parse_into_args(zstr_view cmd) {
 
         if (iswspace(r)) {
             if (zstr_len(&arg) != 0) {
-                PUSH_AND_CLEAR_ARG(ret, arg);
+                PUSH_AND_RESET_ARG(ret, arg);
                 continue;
             }
-			continue;
+            continue;
         };
         zstr_fmt(&arg, "%lc", r);
     }
 
     if (zstr_len(&arg) != 0)
-        PUSH_AND_CLEAR_ARG(ret, arg);
+        PUSH_AND_RESET_ARG(ret, arg);
 
-
-#undef PUSH_AND_CLEAR_ARG
+#undef PUSH_AND_RESET_ARG
+    DLN("%zu", ret.length);
 
     // zstr_split_iter it = zstr_split_init(cmd, " ");
     // zstr_view out;
