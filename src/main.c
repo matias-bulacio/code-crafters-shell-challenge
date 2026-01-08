@@ -45,7 +45,9 @@ void repl(char **env) {
 	zvec_foreach_decl(ShArgs, &args, it) {
 		zstr_free(it);
 	}
+	DLN("Freed %zu strings.", args.length);
     zstr_free(&cmd);
+	REACHED("Freed cmd");
 }
 
 int main(int argc, char *argv[], char *env[]) {
