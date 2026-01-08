@@ -1,9 +1,9 @@
 #include "../include/args_func.h"
 #include "../include/builtin-map.h"
 #include "../include/macros.h"
+#include "../include/sh_exec.h"
 #include "../include/z-libs/zstr.h"
 #include "../include/z-libs/zvec-registered.h"
-#include "../include/sh_exec.h"
 #include <stddef.h>
 #include <stdio.h>
 
@@ -27,14 +27,16 @@ int run(zvec_ShArgs args, char **env) {
     zstr_view name = zstr_as_view(zvec_at(&args, 0));
     sh_builtin *bi = zmap_get(&builtin_map, name);
 
-	if (bi != NULL) return (*bi)(args, env);
+    if (bi != NULL)
+        return (*bi)(args, env);
 
-	int ret;
-	if(try_exec_from_env_path(args, &ret)) return ret;
+    int ret;
+    if (try_exec_from_env_path(args, &ret))
+        return ret;
 
-	REACHED("Not found!");
-	not_found(name);
-	return 1;
+    REACHED("Not found!");
+    not_found(name);
+    return 1;
 }
 
 void repl(char **env) {
@@ -42,12 +44,15 @@ void repl(char **env) {
     zstr cmd = get_input();
     zvec_ShArgs args = parse_into_args(zstr_as_view(&cmd));
     run(args, env);
-	zvec_foreach_decl(ShArgs, &args, it) {
-		zstr_free(it);
-	}
-	DLN("Freed %zu strings.", args.length);
+
+	REACHED("Start to free!");
+    zvec_foreach_decl(ShArgs, &args, it) {
+        zstr_free(it);
+        DLN("Freed %zu!", ((size_t)(it - args.data)));
+    }
+    DLN("Freed %zu strings.", args.length);
     zstr_free(&cmd);
-	REACHED("Freed cmd");
+    REACHED("Freed cmd");
 }
 
 int main(int argc, char *argv[], char *env[]) {

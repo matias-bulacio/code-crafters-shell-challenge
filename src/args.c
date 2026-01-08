@@ -57,7 +57,7 @@ zvec_ShArgs parse_into_args(zstr_view cmd) {
     if (zstr_len(&arg) != 0)
         PUSH_AND_CLEAR_ARG(ret, arg);
 
-    zstr_free(&arg);
+
 #undef PUSH_AND_CLEAR_ARG
 
     // zstr_split_iter it = zstr_split_init(cmd, " ");
