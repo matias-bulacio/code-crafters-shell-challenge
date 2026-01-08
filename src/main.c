@@ -42,10 +42,10 @@ void repl(char **env) {
     zstr cmd = get_input();
     zvec_ShArgs args = parse_into_args(zstr_as_view(&cmd));
     run(args, env);
-    zstr_free(&cmd);
 	zvec_foreach_decl(ShArgs, &args, it) {
 		zstr_free(it);
 	}
+    zstr_free(&cmd);
 }
 
 int main(int argc, char *argv[], char *env[]) {
