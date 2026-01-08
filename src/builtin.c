@@ -1,6 +1,5 @@
 #include "../include/builtin.h"
 #include "../include/builtin-map.h"
-#include "../include/macros.h"
 #include "../include/sh_exec.h"
 #include "../include/sh_path.h"
 #include "../include/z-libs/zmaps-registered.h"
@@ -38,16 +37,13 @@ int type_cmd(zvec_ShArgs v, char **env) {
         return 0;
     }
 
-    REACHED("Inside type");
     // Is it an executable file?
-    scope {
+    {
         zstr_autofree path = zstr_init();
         char *pathenv = getenv("PATH");
         if (pathenv != NULL) {
-            DLN("PATH=%s", pathenv);
             zstr_fmt(&path, "%s", pathenv);
         } else {
-            REACHED("PATH is empty");
         }
         zstr exec_path = find_exec(name, zstr_view_from(pathenv));
         if (zstr_len(&exec_path) != 0) { // FOUND

@@ -1,5 +1,4 @@
 #include "../include/args_type.h"
-#include "../include/macros.h"
 #include "../include/z-libs/zvec-registered.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -19,7 +18,6 @@ zvec_ShArgs parse_into_args(const zstr cmd) {
 #define PUSH_AND_RESET_ARG(zv, zs)                                             \
     do {                                                                       \
         zvec_push(&(zv), zs);                                                  \
-        DLN(ZSTR_FMT, ZSTR_ARG(zs));                                           \
         (zs) = zstr_init();                                                    \
     } while (0)
 
@@ -27,7 +25,6 @@ zvec_ShArgs parse_into_args(const zstr cmd) {
     wchar_t quote = 0;
     zstr arg = zstr_init();
     while (r = zstr_next_rune(&runes), r != 0 && r != WEOF) {
-        DLN("%lc", r);
         if (quote != 0) {
             if (r != quote) {
                 zstr_fmt(&arg, "%lc", r);
@@ -56,7 +53,6 @@ zvec_ShArgs parse_into_args(const zstr cmd) {
         PUSH_AND_RESET_ARG(ret, arg);
 
 #undef PUSH_AND_RESET_ARG
-    DLN("%zu", ret.length);
 
     // zstr_split_iter it = zstr_split_init(cmd, " ");
     // zstr_view out;

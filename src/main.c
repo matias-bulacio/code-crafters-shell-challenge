@@ -1,6 +1,5 @@
 #include "../include/args_func.h"
 #include "../include/builtin-map.h"
-#include "../include/macros.h"
 #include "../include/sh_exec.h"
 #include "../include/z-libs/zstr.h"
 #include "../include/z-libs/zvec-registered.h"
@@ -10,11 +9,8 @@
 zstr get_input() {
     char buf[1024];
     fgets(buf, 1024, stdin);
-    DLN("%lu", strlen(buf));
 
-    REACHED("About to allocate!");
     zstr s = zstr_from(buf);
-    REACHED("Allocated!");
     zstr_trim(&s);
     return s;
 }
@@ -34,7 +30,6 @@ int run(zvec_ShArgs args, char **env) {
     if (try_exec_from_env_path(args, &ret))
         return ret;
 
-    REACHED("Not found!");
     not_found(name);
     return 1;
 }
@@ -45,14 +40,10 @@ void repl(char **env) {
     zvec_ShArgs args = parse_into_args(cmd);
     run(args, env);
 
-	REACHED("Start to free!");
     zvec_foreach_decl(ShArgs, &args, it) {
         zstr_free(it);
-        DLN("Freed %zu!", ((size_t)(it - args.data)));
     }
-    DLN("Freed %zu strings.", args.length);
     zstr_free(&cmd);
-    REACHED("Freed cmd");
 }
 
 int main(int argc, char *argv[], char *env[]) {

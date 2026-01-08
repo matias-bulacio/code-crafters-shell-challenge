@@ -1,6 +1,5 @@
 #include "../include/sh_exec.h"
 #include "../include/args_type.h"
-#include "../include/macros.h"
 #include "../include/z-libs/zvec-registered.h"
 #include <stdlib.h>
 #include <sys/mman.h>
@@ -19,28 +18,23 @@ zstr find_exec(zstr_view exec_name, zstr_view path) {
 
         if (zstr_ends_with(&s, "/"))
             zstr_pop_char(&s);
-        DLN(ZSTR_FMT, ZSTR_ARG(s));
 
 #define SH_ZVIEW_ARG(s) (int)(s).len, (s).data
         zstr_fmt(&s, "%.*s/%.*s", SH_ZVIEW_ARG(path_dir),
                  SH_ZVIEW_ARG(exec_name)); // Path is now ready and stored in s
 #undef SH_ZVIEW_ARG
 
-        DLN(ZSTR_FMT, ZSTR_ARG(s));
 
         struct stat stat_data;
         int stat_res = stat(zstr_cstr(&s), &stat_data);
         if (stat_res != 0) {
-            REACHED("Not found here!");
             continue;
         }
 
         if (stat_data.st_mode & S_IXUSR && !S_ISDIR(stat_data.st_mode)) { // Has execute permisions
-            REACHED("Has permisions!");
             return s;
         }
 
-        REACHED("No permitions");
 
         continue;
     }
@@ -52,10 +46,8 @@ bool try_exec_from_env_path(zvec_ShArgs args, int *ret) {
     zstr_autofree path = zstr_init();
     char *pathenv = getenv("PATH");
     if (pathenv != NULL) {
-        DLN("PATH=%s", pathenv);
         zstr_fmt(&path, "%s", pathenv);
     } else {
-        REACHED("PATH is empty");
     }
 
     zstr_autofree exec_path =
