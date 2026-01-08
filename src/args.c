@@ -34,8 +34,8 @@ zvec_ShArgs parse_into_args(const zstr cmd) {
             continue;
         }
 
-        if (r == '\'') {
-            quote = '\'';
+        if (r == '\'' || r == '"') {
+            quote = r;
             continue;
         }
 
