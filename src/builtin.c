@@ -29,7 +29,7 @@ void builtin_map_init() {
 }
 
 int type_cmd(zvec_ShArgs v, char **env) {
-    zstr_view name = *zvec_at(&v, 1);
+    zstr_view name = zstr_as_view(zvec_at(&v, 1));
 
     // Is it a builtin?
     sh_builtin *k = zmap_get(&builtin_map, name);
@@ -67,7 +67,7 @@ int exit_cmd(zvec_ShArgs, char **env) { exit(EXIT_SUCCESS); }
 
 int echo_cmd(zvec_ShArgs v, char **env) {
     for (int i = 0; i < v.length; i++) {
-        zstr_view arg = *zvec_at(&v, i);
+        zstr_view arg = zstr_as_view(zvec_at(&v, i));
         if (i == 0)
             continue;
         if (i == 1) {
@@ -99,7 +99,7 @@ int pwd_cmd(zvec_ShArgs, char **) {
 int cd_cmd(zvec_ShArgs args, char **) {
     zstr_view dir_v;
     if (args.length > 1)
-        dir_v = args.data[1];
+        dir_v = zstr_as_view(&args.data[1]);
     else {
         dir_v = ZSV("~");
     }

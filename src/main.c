@@ -24,7 +24,7 @@ void not_found(zstr_view cmd) {
 }
 
 int run(zvec_ShArgs args, char **env) {
-    zstr_view name = *zvec_at(&args, 0);
+    zstr_view name = zstr_as_view(zvec_at(&args, 0));
     sh_builtin *bi = zmap_get(&builtin_map, name);
 
 	if (bi != NULL) return (*bi)(args, env);
@@ -43,6 +43,9 @@ void repl(char **env) {
     zvec_ShArgs args = parse_into_args(zstr_as_view(&cmd));
     run(args, env);
     zstr_free(&cmd);
+	zvec_foreach_decl(ShArgs, &args, it) {
+		zstr_free(it);
+	}
 }
 
 int main(int argc, char *argv[], char *env[]) {

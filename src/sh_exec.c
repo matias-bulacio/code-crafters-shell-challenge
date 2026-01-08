@@ -1,7 +1,7 @@
 #include "../include/sh_exec.h"
+#include "../include/args_type.h"
 #include "../include/macros.h"
 #include "../include/z-libs/zvec-registered.h"
-#include "../include/args_type.h"
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -35,7 +35,7 @@ zstr find_exec(zstr_view exec_name, zstr_view path) {
             continue;
         }
 
-        if (0 != (stat_data.st_mode & S_IXUSR)) { // Has execute permisions
+        if (stat_data.st_mode & S_IXUSR && !S_ISDIR(stat_data.st_mode)) { // Has execute permisions
             REACHED("Has permisions!");
             return s;
         }
@@ -59,7 +59,7 @@ bool try_exec_from_env_path(zvec_ShArgs args, int *ret) {
     }
 
     zstr_autofree exec_path =
-        find_exec(*zvec_at(&args, 0), zstr_as_view(&path));
+        find_exec(zstr_as_view(zvec_at(&args, 0)), zstr_as_view(&path));
     if (zstr_len(&exec_path) == 0) { // Error
         return false;
     }
@@ -67,20 +67,22 @@ bool try_exec_from_env_path(zvec_ShArgs args, int *ret) {
     pid_t p = fork();
     if (p < 0)
         return false;
-    if (p == 0) { // Child
+    if (p == 0) {                           // Child
         size_t arg_count = args.length + 1; // NULL PTR FOR TERMINATOR
 
         char **p_args = calloc(arg_count, sizeof(const char *));
         if (p_args == NULL)
             exit(EXIT_FAILURE);
 
-        zstr *z_args = calloc(arg_count - 1, sizeof(zstr)); // We dont need a null terminator here;
+        zstr *z_args =
+            calloc(arg_count - 1,
+                   sizeof(zstr)); // We dont need a null terminator here;
         if (z_args == NULL)
             exit(EXIT_FAILURE);
 
         for (size_t i = 0; i < arg_count - 1; i++) {
-            z_args[i] = zstr_from_view(args.data[i]);
-			p_args[i] = zstr_cstr(&z_args[i]);
+            z_args[i] = zstr_dup(&args.data[i]);
+            p_args[i] = zstr_cstr(&z_args[i]); // NOLINT
         }
         execv(zstr_cstr(&exec_path), p_args);
 
