@@ -5,7 +5,8 @@
 #include <wchar.h>
 #include <wctype.h>
 
-// This function allocates a bunch of zstr stored in the returned vector. Remember to free them!
+// This function allocates a bunch of zstr stored in the returned vector.
+// Remember to free them!
 zvec_ShArgs parse_into_args(zstr_view cmd) {
     zvec_ShArgs ret = zvec_init(ShArgs);
 
@@ -43,9 +44,12 @@ zvec_ShArgs parse_into_args(zstr_view cmd) {
             continue;
         }
 
-        if (iswspace(r) && zstr_len(&arg) != 0) {
-            PUSH_AND_CLEAR_ARG(ret, arg);
-            continue;
+        if (iswspace(r)) {
+            if (zstr_len(&arg) != 0) {
+                PUSH_AND_CLEAR_ARG(ret, arg);
+                continue;
+            }
+			continue;
         };
         zstr_fmt(&arg, "%lc", r);
     }
@@ -64,7 +68,6 @@ zvec_ShArgs parse_into_args(zstr_view cmd) {
     //         continue;
     //     zvec_push(&ret, (sh_arg)out);
     // }
-
 
     return ret;
 }
