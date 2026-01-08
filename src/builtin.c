@@ -104,7 +104,6 @@ int cd_cmd(zvec_ShArgs args, char **) {
     if (0 != chdir(zstr_cstr(&dir_zstr))) {
         printf("cd: %.*s: No such file or directory\n", (int)dir_v.len,
                dir_v.data);
-		printf("args.data[1]: |"ZSTR_FMT"|\n", ZSTR_ARG(args.data[1]));
         return 1;
     }
     return 0;
