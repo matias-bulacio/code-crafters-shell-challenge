@@ -23,8 +23,20 @@ zvec_ShArgs parse_into_args(const zstr cmd) {
 
     wint_t r;
     wchar_t quote = 0;
+    bool escaped = false;
     zstr arg = zstr_init();
     while (r = zstr_next_rune(&runes), r != 0 && r != WEOF) {
+        if (quote != '\'') {
+            if (escaped) {
+                escaped = false;
+                goto add_char;
+            }
+
+            if (r == '\\') {
+                escaped = true;
+                continue;
+            }
+        }
         if (quote != 0) {
             if (r != quote) {
                 zstr_fmt(&arg, "%lc", r);
@@ -46,6 +58,8 @@ zvec_ShArgs parse_into_args(const zstr cmd) {
             }
             continue;
         };
+
+    add_char:
         zstr_fmt(&arg, "%lc", r);
     }
 
