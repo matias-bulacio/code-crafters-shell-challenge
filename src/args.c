@@ -24,16 +24,10 @@ zvec_ShArgs parse_into_args(const zstr cmd) {
     wint_t r;
     wchar_t quote = 0;
     bool escaped = false;
+	bool escaping_allowed = true;
     zstr arg = zstr_init();
     while (r = zstr_next_rune(&runes), r != 0 && r != WEOF) {
-        if (quote != 0) {
-            if (r != quote) {
-                zstr_fmt(&arg, "%lc", r);
-                continue;
-            }
-            quote = 0;
-            continue;
-        } else {
+		if (quote == 0 || escaping_allowed){
             if (escaped) {
                 escaped = false;
                 goto add_char;
@@ -44,9 +38,19 @@ zvec_ShArgs parse_into_args(const zstr cmd) {
                 continue;
             }
 		}
+        if (quote != 0) {
+            if (r != quote) {
+                zstr_fmt(&arg, "%lc", r);
+                continue;
+            }
+            quote = 0;
+			escaping_allowed = true;
+            continue;
+        }
 
         if (r == '\'' || r == '"') {
             quote = r;
+			escaping_allowed = (r == '"');
             continue;
         }
 
