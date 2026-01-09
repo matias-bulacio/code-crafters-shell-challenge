@@ -5,6 +5,8 @@
 #include <wchar.h>
 #include <wctype.h>
 
+char *control_chars = "\"\\";
+
 // This function allocates a bunch of zstr stored in the returned vector.
 // Remember to free them!
 zvec_ShArgs parse_into_args(const zstr cmd) {
@@ -24,33 +26,46 @@ zvec_ShArgs parse_into_args(const zstr cmd) {
     wint_t r;
     wchar_t quote = 0;
     bool escaped = false;
-	bool escaping_allowed = true;
+    bool escaping_allowed = true;
+    bool escape_only_control = false;
     zstr arg = zstr_init();
     while (r = zstr_next_rune(&runes), r != 0 && r != WEOF) {
-		if (quote == 0 || escaping_allowed){
+        if (quote == 0 || escaping_allowed) {
             if (escaped) {
-                escaped = false;
-                goto add_char;
+                if (!escape_only_control) {
+					goto escape_char;
+                }
+
+                for (char *p = control_chars; *p != '\0'; p++) {
+                    if (*p == r) {
+						goto escape_char;
+                    };
+                }
+
+                zstr_push(&arg, '\\');
+				goto escape_char;
             }
 
             if (r == '\\') {
                 escaped = true;
                 continue;
             }
-		}
+        }
         if (quote != 0) {
             if (r != quote) {
                 zstr_fmt(&arg, "%lc", r);
                 continue;
             }
             quote = 0;
-			escaping_allowed = true;
+            escaping_allowed = true;
+            escape_only_control = false;
             continue;
         }
 
         if (r == '\'' || r == '"') {
             quote = r;
-			escaping_allowed = (r == '"');
+            escaping_allowed = (r == '"');
+            escape_only_control = (r == '"');
             continue;
         }
 
@@ -61,7 +76,9 @@ zvec_ShArgs parse_into_args(const zstr cmd) {
             }
             continue;
         };
-
+        goto add_char;
+    escape_char:
+        escaped = false;
     add_char:
         zstr_fmt(&arg, "%lc", r);
     }
